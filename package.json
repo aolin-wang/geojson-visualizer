@@ -1,0 +1,13 @@
+{
+  "name": "geojson-visualizer",
+  "version": "1.0.0",
+  "description": "GeoJSON visualization tool for displaying road segments and traffic signs",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080"
+  },
+  "keywords": ["geojson", "visualization", "map", "traffic-signs"],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoJSON 可视化 - 路段与交通标志</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        #map {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-size: 14px;
+        }
+        
+        .legend h4 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #333;
+        }
+        
+        .legend-color.red {
+            background-color: #ff0000;
+        }
+        
+        .legend-color.blue {
+            background-color: #0066ff;
+        }
+        
+        .legend-color.cyan {
+            background-color: #00ffff;
+            border: 2px solid #0099cc;
+        }
+        
+        .stats {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-size: 13px;
+            min-width: 200px;
+        }
+        
+        .stats h4 {
+            margin: 0 0 10px 0;
+            font-size: 15px;
+            font-weight: 600;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+        
+        .stats div {
+            margin: 5px 0;
+            color: #555;
+        }
+        
+        .stats strong {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="legend">
+        <h4>图例</h4>
+        <div class="legend-item">
+            <div class="legend-color cyan"></div>
+            <span>道路分段</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color red"></div>
+            <span>优先通行标志</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color blue"></div>
+            <span>其他交通标志</span>
+        </div>
+    </div>
+    
+    <div class="stats">
+        <h4>数据统计</h4>
+        <div>路段数量: <strong id="segment-count">-</strong></div>
+        <div>交通标志: <strong id="sign-count">-</strong></div>
+        <div>优先通行: <strong id="priority-count">-</strong></div>
+        <div>其他标志: <strong id="other-count">-</strong></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
