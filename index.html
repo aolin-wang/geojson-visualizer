@@ -235,6 +235,88 @@
         .layer-toggle button:hover {
             background: #218838;
         }
+        
+        .filter-panel {
+            position: absolute;
+            bottom: 140px;
+            right: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .filter-panel.active {
+            display: block;
+        }
+        
+        .filter-panel h4 {
+            margin: 0 0 10px 0;
+            font-size: 15px;
+            font-weight: 600;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+        
+        .filter-controls {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-controls button {
+            flex: 1;
+            padding: 6px;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            background: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .filter-controls button:hover {
+            background: #e0e0e0;
+        }
+        
+        .filter-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+        
+        .filter-item input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        
+        .filter-item label {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .filter-toggle-btn {
+            position: absolute;
+            bottom: 30px;
+            right: 220px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .filter-toggle-btn:hover {
+            background: #f5f5f5;
+        }
     </style>
 </head>
 <body>
@@ -285,6 +367,17 @@
             <div class="legend-color blue"></div>
             <span>其他交通标志</span>
         </div>
+    </div>
+    
+    <div class="filter-toggle-btn" onclick="toggleFilterPanel()">🔍 过滤标志</div>
+    
+    <div class="filter-panel" id="filter-panel">
+        <h4>交通标志过滤</h4>
+        <div class="filter-controls">
+            <button onclick="selectAllFilters()">全选</button>
+            <button onclick="deselectAllFilters()">全不选</button>
+        </div>
+        <div id="filter-list"></div>
     </div>
     
     <div class="stats">

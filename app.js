@@ -7,6 +7,10 @@
         prioritySigns: 0,
         otherSigns: 0
     };
+    
+    let currentGeoJSONData = null;
+    let signTypeFilters = new Set();
+    let allSignTypes = new Set();
 
     let mapLayers = L.layerGroup();
     const map = L.map('map').setView([48.775, 9.17], 3);
@@ -38,6 +42,84 @@
             document.getElementById('layer-toggle-btn').textContent = '🛰️ 卫星地图';
         }
     };
+    
+    window.toggleFilterPanel = function() {
+        const panel = document.getElementById('filter-panel');
+        panel.classList.toggle('active');
+    };
+    
+    window.selectAllFilters = function() {
+        allSignTypes.forEach(type => signTypeFilters.add(type));
+        updateFilterCheckboxes();
+        applyFilters();
+    };
+    
+    window.deselectAllFilters = function() {
+        signTypeFilters.clear();
+        updateFilterCheckboxes();
+        applyFilters();
+    };
+    
+    function updateFilterCheckboxes() {
+        allSignTypes.forEach(type => {
+            const checkbox = document.getElementById(`filter-${type}`);
+            if (checkbox) {
+                checkbox.checked = signTypeFilters.has(type);
+            }
+        });
+    }
+    
+    function buildFilterPanel(data) {
+        allSignTypes.clear();
+        const features = data.layers[0].data.features;
+        
+        features.forEach(feature => {
+            if (feature.properties.traffic_signs) {
+                feature.properties.traffic_signs.forEach(sign => {
+                    allSignTypes.add(sign.traffic_sign_type);
+                });
+            }
+        });
+        
+        signTypeFilters = new Set(allSignTypes);
+        
+        const filterList = document.getElementById('filter-list');
+        filterList.innerHTML = '';
+        
+        const sortedTypes = Array.from(allSignTypes).sort();
+        sortedTypes.forEach(type => {
+            const item = document.createElement('div');
+            item.className = 'filter-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `filter-${type}`;
+            checkbox.checked = true;
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    signTypeFilters.add(type);
+                } else {
+                    signTypeFilters.delete(type);
+                }
+                applyFilters();
+            });
+            
+            const label = document.createElement('label');
+            label.htmlFor = `filter-${type}`;
+            label.textContent = type;
+            
+            item.appendChild(checkbox);
+            item.appendChild(label);
+            filterList.appendChild(item);
+        });
+    }
+    
+    function applyFilters() {
+        if (!currentGeoJSONData) return;
+        
+        clearMap();
+        renderGeoJSON(currentGeoJSONData);
+    }
 
     /**
      * Calculate point coordinates at specified offset along LineString
@@ -143,89 +225,111 @@
                 throw new Error('Invalid GeoJSON structure: 缺少 layers[0].data');
             }
 
+            currentGeoJSONData = data;
+            buildFilterPanel(data);
+            
             clearMap();
-            showLoading('渲染地图...');
-
-            const features = data.layers[0].data.features;
-            stats.segments = features.length;
-
-            const bounds = L.latLngBounds();
-
-            features.forEach(feature => {
-                const { geometry, properties } = feature;
-                
-                if (geometry.type === 'LineString') {
-                    const coordinates = geometry.coordinates;
-                    
-                    const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
-                    
-                    const polyline = L.polyline(latLngs, {
-                        color: '#00ffff',
-                        weight: 5,
-                        opacity: 0.7
-                    }).addTo(mapLayers);
-
-                    latLngs.forEach(latLng => bounds.extend(latLng));
-
-                    polyline.bindPopup(`
-                        <strong>路段 ID:</strong> ${properties.segment_id || 'N/A'}<br>
-                        <strong>长度:</strong> ${properties.length || 'N/A'}m<br>
-                        <strong>本地 ID:</strong> ${properties.segment_local_id || 'N/A'}
-                    `);
-
-                    if (properties.traffic_signs && properties.traffic_signs.length > 0) {
-                        properties.traffic_signs.forEach(sign => {
-                            const signPosition = getPointAtOffset(coordinates, sign.offset);
-                            
-                            if (signPosition) {
-                                const isPriority = sign.traffic_sign_type === 'CROSSING_WITH_PRIORITY_FROM_THE_RIGHT';
-                                const color = isPriority ? '#ff0000' : '#0066ff';
-                                
-                                stats.totalSigns++;
-                                if (isPriority) {
-                                    stats.prioritySigns++;
-                                } else {
-                                    stats.otherSigns++;
-                                }
-
-                                const marker = L.circleMarker([signPosition[1], signPosition[0]], {
-                                    radius: 6,
-                                    fillColor: color,
-                                    color: '#333',
-                                    weight: 2,
-                                    opacity: 1,
-                                    fillOpacity: 0.9
-                                }).addTo(mapLayers);
-
-                                marker.bindPopup(`
-                                    <strong>标志类型:</strong> ${sign.traffic_sign_type}<br>
-                                    <strong>偏移量:</strong> ${sign.offset}m<br>
-                                    <strong>所属路段:</strong> ${properties.segment_id || 'N/A'}
-                                `);
-                            }
-                        });
-                    }
-                }
-            });
-
-            updateStats();
-
-            if (bounds.isValid()) {
-                map.fitBounds(bounds, { padding: [50, 50] });
-            }
-
+            renderGeoJSON(data);
             hideLoading();
-
-            console.log('✓ GeoJSON 加载完成');
-            console.log(`  - 路段数量: ${stats.segments}`);
-            console.log(`  - 交通标志: ${stats.totalSigns}`);
-            console.log(`  - 优先通行: ${stats.prioritySigns}`);
-            console.log(`  - 其他标志: ${stats.otherSigns}`);
 
         } catch (error) {
             console.error('加载 GeoJSON 失败:', error);
             showError(error.message);
         }
+    }
+    
+    function renderGeoJSON(data) {
+        showLoading('渲染地图...');
+
+        const features = data.layers[0].data.features;
+        const bounds = L.latLngBounds();
+        let renderedSegments = 0;
+
+        features.forEach(feature => {
+            const { geometry, properties } = feature;
+            
+            if (geometry.type !== 'LineString') return;
+            
+            const coordinates = geometry.coordinates;
+            let hasVisibleSigns = false;
+            
+            if (properties.traffic_signs && properties.traffic_signs.length > 0) {
+                hasVisibleSigns = properties.traffic_signs.some(sign => 
+                    signTypeFilters.has(sign.traffic_sign_type)
+                );
+            }
+            
+            if (!hasVisibleSigns && signTypeFilters.size < allSignTypes.size) {
+                return;
+            }
+            
+            renderedSegments++;
+            const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
+            
+            const polyline = L.polyline(latLngs, {
+                color: '#00ffff',
+                weight: 5,
+                opacity: 0.7
+            }).addTo(mapLayers);
+
+            latLngs.forEach(latLng => bounds.extend(latLng));
+
+            polyline.bindPopup(`
+                <strong>路段 ID:</strong> ${properties.segment_id || 'N/A'}<br>
+                <strong>长度:</strong> ${properties.length || 'N/A'}m<br>
+                <strong>本地 ID:</strong> ${properties.segment_local_id || 'N/A'}
+            `);
+
+            if (properties.traffic_signs && properties.traffic_signs.length > 0) {
+                properties.traffic_signs.forEach(sign => {
+                    if (!signTypeFilters.has(sign.traffic_sign_type)) {
+                        return;
+                    }
+                    
+                    const signPosition = getPointAtOffset(coordinates, sign.offset);
+                    
+                    if (signPosition) {
+                        const isPriority = sign.traffic_sign_type === 'CROSSING_WITH_PRIORITY_FROM_THE_RIGHT';
+                        const color = isPriority ? '#ff0000' : '#0066ff';
+                        
+                        stats.totalSigns++;
+                        if (isPriority) {
+                            stats.prioritySigns++;
+                        } else {
+                            stats.otherSigns++;
+                        }
+
+                        const marker = L.circleMarker([signPosition[1], signPosition[0]], {
+                            radius: 6,
+                            fillColor: color,
+                            color: '#333',
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.9
+                        }).addTo(mapLayers);
+
+                        marker.bindPopup(`
+                            <strong>标志类型:</strong> ${sign.traffic_sign_type}<br>
+                            <strong>偏移量:</strong> ${sign.offset}m<br>
+                            <strong>所属路段:</strong> ${properties.segment_id || 'N/A'}
+                        `);
+                    }
+                });
+            }
+        });
+
+        stats.segments = renderedSegments;
+        updateStats();
+
+        if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+
+        console.log('✓ GeoJSON 渲染完成');
+        console.log(`  - 渲染路段: ${stats.segments}`);
+        console.log(`  - 交通标志: ${stats.totalSigns}`);
+        console.log(`  - 优先通行: ${stats.prioritySigns}`);
+        console.log(`  - 其他标志: ${stats.otherSigns}`);
     }
 
     function updateStats() {
