@@ -10,6 +10,7 @@
     
     let currentGeoJSONData = null;
     let signTypeFilters = new Set();
+    let tempSignTypeFilters = new Set();
     let allSignTypes = new Set();
 
     let mapLayers = L.layerGroup();
@@ -45,29 +46,48 @@
     
     window.toggleFilterPanel = function() {
         const panel = document.getElementById('filter-panel');
+        const isOpening = !panel.classList.contains('active');
+        
+        if (isOpening) {
+            tempSignTypeFilters = new Set(signTypeFilters);
+            updateFilterCheckboxes();
+        }
+        
         panel.classList.toggle('active');
         console.log(`Filter panel toggled: ${panel.classList.contains('active') ? 'visible' : 'hidden'}`);
     };
     
     window.selectAllFilters = function() {
-        allSignTypes.forEach(type => signTypeFilters.add(type));
+        allSignTypes.forEach(type => tempSignTypeFilters.add(type));
         updateFilterCheckboxes();
-        applyFilters();
-        console.log('✓ 所有过滤器已选中');
+        console.log('✓ 临时选中所有过滤器');
     };
     
     window.deselectAllFilters = function() {
-        signTypeFilters.clear();
+        tempSignTypeFilters.clear();
         updateFilterCheckboxes();
+        console.log('✓ 临时取消所有过滤器');
+    };
+    
+    window.applyFilterChanges = function() {
+        signTypeFilters = new Set(tempSignTypeFilters);
         applyFilters();
-        console.log('✓ 所有过滤器已取消');
+        document.getElementById('filter-panel').classList.remove('active');
+        console.log('✓ 过滤器已应用并关闭面板');
+    };
+    
+    window.cancelFilterChanges = function() {
+        tempSignTypeFilters = new Set(signTypeFilters);
+        updateFilterCheckboxes();
+        document.getElementById('filter-panel').classList.remove('active');
+        console.log('✓ 已取消更改并关闭面板');
     };
     
     function updateFilterCheckboxes() {
         allSignTypes.forEach(type => {
             const checkbox = document.getElementById(`filter-${type}`);
             if (checkbox) {
-                checkbox.checked = signTypeFilters.has(type);
+                checkbox.checked = tempSignTypeFilters.has(type);
             }
         });
     }
@@ -85,6 +105,7 @@
         });
         
         signTypeFilters = new Set(allSignTypes);
+        tempSignTypeFilters = new Set(allSignTypes);
         
         const filterList = document.getElementById('filter-list');
         filterList.innerHTML = '';
@@ -104,13 +125,11 @@
             checkbox.id = `filter-${type}`;
             checkbox.checked = true;
             checkbox.addEventListener('change', (e) => {
-                console.log(`Filter changed: ${type} = ${e.target.checked}`);
                 if (e.target.checked) {
-                    signTypeFilters.add(type);
+                    tempSignTypeFilters.add(type);
                 } else {
-                    signTypeFilters.delete(type);
+                    tempSignTypeFilters.delete(type);
                 }
-                applyFilters();
             });
             
             const label = document.createElement('label');

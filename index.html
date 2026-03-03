@@ -284,6 +284,42 @@
             background: #e0e0e0;
         }
         
+        .filter-actions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-actions button {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .filter-actions .btn-apply {
+            background: #28a745;
+            color: white;
+        }
+        
+        .filter-actions .btn-apply:hover {
+            background: #218838;
+        }
+        
+        .filter-actions .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .filter-actions .btn-cancel:hover {
+            background: #5a6268;
+        }
+        
         .filter-item {
             display: flex;
             align-items: center;
@@ -381,6 +417,10 @@
             <button onclick="deselectAllFilters()">全不选</button>
         </div>
         <div id="filter-list"></div>
+        <div class="filter-actions">
+            <button class="btn-apply" onclick="applyFilterChanges()">✓ 确认</button>
+            <button class="btn-cancel" onclick="cancelFilterChanges()">✕ 取消</button>
+        </div>
     </div>
     
     <div class="stats">
