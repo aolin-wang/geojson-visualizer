@@ -46,18 +46,21 @@
     window.toggleFilterPanel = function() {
         const panel = document.getElementById('filter-panel');
         panel.classList.toggle('active');
+        console.log(`Filter panel toggled: ${panel.classList.contains('active') ? 'visible' : 'hidden'}`);
     };
     
     window.selectAllFilters = function() {
         allSignTypes.forEach(type => signTypeFilters.add(type));
         updateFilterCheckboxes();
         applyFilters();
+        console.log('✓ 所有过滤器已选中');
     };
     
     window.deselectAllFilters = function() {
         signTypeFilters.clear();
         updateFilterCheckboxes();
         applyFilters();
+        console.log('✓ 所有过滤器已取消');
     };
     
     function updateFilterCheckboxes() {
@@ -86,6 +89,11 @@
         const filterList = document.getElementById('filter-list');
         filterList.innerHTML = '';
         
+        if (allSignTypes.size === 0) {
+            filterList.innerHTML = '<div style="color: #999; padding: 10px;">此数据没有交通标志</div>';
+            return;
+        }
+        
         const sortedTypes = Array.from(allSignTypes).sort();
         sortedTypes.forEach(type => {
             const item = document.createElement('div');
@@ -96,6 +104,7 @@
             checkbox.id = `filter-${type}`;
             checkbox.checked = true;
             checkbox.addEventListener('change', (e) => {
+                console.log(`Filter changed: ${type} = ${e.target.checked}`);
                 if (e.target.checked) {
                     signTypeFilters.add(type);
                 } else {
@@ -112,11 +121,14 @@
             item.appendChild(label);
             filterList.appendChild(item);
         });
+        
+        console.log(`✓ 过滤器已初始化，共 ${allSignTypes.size} 种标志类型`);
     }
     
     function applyFilters() {
         if (!currentGeoJSONData) return;
         
+        console.log(`应用过滤器：已选中 ${signTypeFilters.size}/${allSignTypes.size} 种标志类型`);
         clearMap();
         renderGeoJSON(currentGeoJSONData);
     }
