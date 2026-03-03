@@ -95,10 +95,151 @@
         .stats strong {
             color: #000;
         }
+        
+        .loader-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        .loader-panel h3 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .url-input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .url-input-group button {
+            padding: 10px 20px;
+            background: #0066ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .url-input-group button:hover {
+            background: #0052cc;
+        }
+        
+        .file-upload-section {
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .file-upload-label {
+            display: block;
+            padding: 12px;
+            background: #f5f5f5;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .file-upload-label:hover {
+            background: #e8e8e8;
+            border-color: #999;
+        }
+        
+        .file-upload-label input {
+            display: none;
+        }
+        
+        .tip {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0066ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
+    
+    <div class="loader-panel">
+        <h3>📍 加载 GeoJSON 数据</h3>
+        
+        <div class="url-input-group">
+            <input type="text" id="geojson-url" placeholder="输入 GeoJSON 文件 URL">
+            <button id="url-load-btn">加载</button>
+        </div>
+        
+        <div class="file-upload-section">
+            <label class="file-upload-label">
+                <input type="file" id="file-input" accept=".json,.geojson">
+                📁 点击选择文件 或 拖拽到地图
+            </label>
+        </div>
+        
+        <div class="tip">
+            💡 提示：也可以直接拖拽 .json 或 .geojson 文件到地图上
+        </div>
+    </div>
+    
+    <div id="loading">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div id="loading-text">加载中...</div>
+        </div>
+    </div>
     
     <div class="legend">
         <h4>图例</h4>
