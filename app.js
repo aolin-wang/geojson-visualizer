@@ -154,7 +154,7 @@
         resetStats();
         
         allSegmentLayers.forEach(item => {
-            const shouldShow = item.signTypes.length === 0 || 
+            const shouldShow = item.signTypes.length > 0 && 
                              item.signTypes.some(type => signTypeFilters.has(type));
             
             if (shouldShow) {
