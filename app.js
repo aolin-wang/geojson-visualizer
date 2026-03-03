@@ -9,14 +9,35 @@
     };
 
     let mapLayers = L.layerGroup();
-    const map = L.map('map').setView([48.775, 9.17], 13);
+    const map = L.map('map').setView([48.775, 9.17], 3);
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
-    }).addTo(map);
+    });
     
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        maxZoom: 19
+    });
+    
+    let currentBaseLayer = streetLayer;
+    currentBaseLayer.addTo(map);
     mapLayers.addTo(map);
+    
+    window.toggleMapLayer = function() {
+        if (map.hasLayer(streetLayer)) {
+            map.removeLayer(streetLayer);
+            satelliteLayer.addTo(map);
+            currentBaseLayer = satelliteLayer;
+            document.getElementById('layer-toggle-btn').textContent = '🗺️ 街道地图';
+        } else {
+            map.removeLayer(satelliteLayer);
+            streetLayer.addTo(map);
+            currentBaseLayer = streetLayer;
+            document.getElementById('layer-toggle-btn').textContent = '🛰️ 卫星地图';
+        }
+    };
 
     /**
      * Calculate point coordinates at specified offset along LineString

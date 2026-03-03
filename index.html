@@ -209,6 +209,32 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .layer-toggle {
+            position: absolute;
+            top: 10px;
+            left: 420px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        
+        .layer-toggle button {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .layer-toggle button:hover {
+            background: #218838;
+        }
     </style>
 </head>
 <body>
@@ -232,6 +258,10 @@
         <div class="tip">
             💡 提示：也可以直接拖拽 .json 或 .geojson 文件到地图上
         </div>
+    </div>
+    
+    <div class="layer-toggle">
+        <button id="layer-toggle-btn" onclick="toggleMapLayer()">🛰️ 卫星地图</button>
     </div>
     
     <div id="loading">
